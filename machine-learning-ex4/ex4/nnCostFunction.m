@@ -77,33 +77,30 @@ J = J_err + J_reg;
 
 % Backprop
 
-delta1 = 0;
-delta2 = 0;
+delta1 = zeros(hidden_layer_size+1, input_layer_size+1);
+delta2 = zeros(num_labels, hidden_layer_size+1);
 for t=1:m
-    a1 = X(t,:); % 1x401
-    z2 = a1 * Theta1'; % 1x25
-    z2 = [1 z2]; % 1x26
-    a2 = sigmoid(z2); % 1x26
-    z3 = a2 * Theta2'; % 1x10
-    a3 = sigmoid(z3); % 1x10
-    error3 = a3 - one_hot(t,:); % 1x10
-    error2 = error3 * Theta2 .* sigmoidGradient(z2); % 1x25
-    delta2 = delta2 + error3' * a2; % 10x25
-    delta1 = delta1 + error2' * a1; % 25x401
+    a0 = X(t,:); % 1x401
+    z1 = a0 * Theta1'; % 1x25
+    a1 = [1 sigmoid(z1)]; % 1x26
+    z2 = a1 * Theta2'; % 1x10
+    a2 = sigmoid(z2); % 1x10
+    error2 = a2 - one_hot(t,:); % 1x10
+    error1 = error2 * Theta2 .* [1 sigmoidGradient(z1)]; % 1x26
+    delta2 = delta2 + error2' * a1; % 10x26
+    delta1 = delta1 + error1' * a0; % 26x401
 end
 
-delta1 = delta1(:,2:end); % 25x400
-delta2 = delta2(:,2:end); % 10x25
+delta1 = delta1(2:end,:); % 25x401
 
-Theta1_grad = delta1 / m;
-Theta2_grad = delta2 / m;
+Theta1_grad = delta1 / m; % 25x401
+Theta2_grad = delta2 / m; % 10x26
 
-
-
-
-
-
-
+% Regularization
+Theta1_reg = lambda/m * [zeros(hidden_layer_size,1) Theta1(:,2:end)];
+Theta2_reg = lambda/m * [zeros(num_labels,1) Theta2(:,2:end)];
+Theta1_grad = Theta1_grad + Theta1_reg;
+Theta2_grad = Theta2_grad + Theta2_reg;
 
 
 
@@ -113,6 +110,5 @@ Theta2_grad = delta2 / m;
 
 % Unroll gradients
 grad = [Theta1_grad(:) ; Theta2_grad(:)];
-
 
 end
