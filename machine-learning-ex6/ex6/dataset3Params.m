@@ -23,8 +23,30 @@ sigma = 0.3;
 %        mean(double(predictions ~= yval))
 %
 
+% Generate C,sigma pairs
+% options = [.01,.03,.1,.3,1,3,10,30];
+options = [.01,.1,1,10];
+[p,q] = meshgrid(options,options);
+pairs = [p(:),q(:)];
 
+bestScore = 100000;
+bestC = 0;
+bestSigma = 0;
+for pair=pairs'
+    C = pair(1);
+    sigma = pair(2);
+    model = svmTrain(X,y,C, @(x1,x2) gaussianKernel(x1,x2,sigma));
+    predictions = svmPredict(model, Xval);
+    error = mean(double(predictions ~= yval));
+    if (error < bestScore)
+        bestScore = error;
+        bestC = C;
+        bestSigma = sigma;
+    endif
+end    
 
+C = bestC;
+sigma = bestSigma;
 
 
 
