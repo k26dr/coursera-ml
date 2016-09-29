@@ -97,7 +97,11 @@ while ~isempty(email_contents)
     %       str2). It will return 1 only if the two strings are equivalent.
     %
 
-
+    index = find(strcmp(str, vocabList));
+    if isempty(index) == 1
+        continue;
+    end
+    word_indices = [word_indices; index];
 
 
 
